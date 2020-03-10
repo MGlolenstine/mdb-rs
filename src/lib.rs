@@ -9,12 +9,12 @@ pub struct MDatabase{
 
 use std::io::Seek;
 use std::fs::File;
-use std::io::{Read, SeekFrom};
+use std::io::{Read, SeekFrom, Error};
 use std::mem::transmute;
 
 impl MDatabase {
     pub fn open_database(filename: &str) -> Result<MDatabase, std::io::Error>{
-        let mut file=File::open("test.mdb").unwrap();
+        let mut file=File::open(filename).unwrap();
         let mut db = MDatabase::read_headers(filename, &mut file).unwrap();
         db = MDatabase::read_db_info(db, &mut file).unwrap();
         Ok(db)
@@ -52,52 +52,51 @@ impl MDatabase {
         db.db_info = Some(info);
         Ok(db)
     }
-    fn seek_and_read_u32(position: u64, file: &mut File) -> Option<u32>{
+    fn seek_and_read_u32(position: u64, file: &mut File) -> Result<u32, Error>{
         unsafe{
-            file.seek(SeekFrom::Start(position));
+            file.seek(SeekFrom::Start(position))?;
             let mut buf = [0u8; 4];
-            file.read(&mut buf);
+            file.read(&mut buf)?;
             let out = transmute::<[u8; 4], u32>(buf);
-            return Some(out);
+            return Ok(out);
         }
     }
 
-    fn seek_and_read_u16(position: u64, file: &mut File) -> Option<u16>{
+    fn seek_and_read_u16(position: u64, file: &mut File) -> Result<u16, Error>{
         unsafe{
-            file.seek(SeekFrom::Start(position));
+            file.seek(SeekFrom::Start(position))?;
             let mut buf = [0u8; 2];
-            file.read(&mut buf);
+            file.read(&mut buf)?;
             let out = transmute::<[u8; 2], u16>(buf);
-            return Some(out);
+            return Ok(out);
         }
     }
-
-    fn seek_and_read_u64(position: u64, file: &mut File) -> Option<u64>{
+    fn seek_and_read_u64(position: u64, file: &mut File) -> Result<u64, Error>{
         unsafe{
-            file.seek(SeekFrom::Start(position));
+            file.seek(SeekFrom::Start(position))?;
             let mut buf = [0u8; 8];
-            file.read(&mut buf);
+            file.read(&mut buf)?;
             let out = transmute::<[u8; 8], u64>(buf);
-            return Some(out);
+            return Ok(out);
         }
     }
 
-    fn seek_and_read_f64(position: u64, file: &mut File) -> Option<f64>{
+    fn seek_and_read_f64(position: u64, file: &mut File) -> Result<f64, Error>{
         unsafe{
-            file.seek(SeekFrom::Start(position));
+            file.seek(SeekFrom::Start(position))?;
             let mut buf = [0u8; 8];
-            file.read(&mut buf);
+            file.read(&mut buf)?;
             let out = transmute::<[u8; 8], f64>(buf);
-            return Some(out);
+            return Ok(out);
         }
     }
 
-    fn seek_and_read_string(position: u64, file: &mut File) -> Option<String>{
-        file.seek(SeekFrom::Start(position));
+    fn seek_and_read_string(position: u64, file: &mut File) -> Result<String, Error>{
+        file.seek(SeekFrom::Start(position))?;
         let mut buf = [0u8; 16];
-        file.read(&mut buf);
+        file.read(&mut buf)?;
         let out = String::from_utf8_lossy(&buf);
-        return Some(out.to_string());
+        return Ok(out.to_string());
     }
 }
 
