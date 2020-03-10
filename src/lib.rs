@@ -104,7 +104,14 @@ impl MDatabase {
 struct DBInfo{
     system_collation: u16,
     system_code_page: u16,
-    database_key: u32, // 0 means not encoded
-    database_password: Option<[u8; 20]>, //TODO: Add a working code for Jet4's 40byte array
+    database_key: u32,                      // 0 means not encoded
+    database_password: Option<Vec<u8>>,    // TODO: Add a working code for Jet4's 40byte array
     creation_date: f64
+}
+
+#[derive(Debug)]
+struct DBTableDefinition{
+    page_signature: u16,                    // always 0x0102
+    unknown: u16,                           // always 'VC' for JET3, number of free bytes on this page for JET4
+    next_page: u32                          // if the page is too long, this contains a pointer to the next page
 }
